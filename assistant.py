@@ -13,6 +13,9 @@ import requests
 import sounddevice as sd
 import webrtcvad
 
+from emotion_detector import EmotionDetector
+from personality_manager import PersonalityManager
+
 try:
     import whisper
 except ImportError:
@@ -60,13 +63,18 @@ class FullDuplexAssistant:
         self.shutdown_event = threading.Event()
 
         self.vad = webrtcvad.Vad(2)
+
+        self.emotion_detector = EmotionDetector()
+        self.personality_manager = PersonalityManager()
+        self.last_emotion = None
+
         self.history: list[dict[str, str]] = [
             {
                 "role": "system",
                 "content": (
                     "You are YaarBot, a friendly real-time voice assistant. "
-                    "Reply conversationally and briefly. Understand Hindi+English mixed speech "
-                    "(Hinglish) naturally. Be helpful, witty when asked, and safe."
+                    "Reply conversationally and briefly. Be helpful, witty when asked, and safe. "
+                    "You have good humor and sometimes dark humor—use it wisely based on context."
                 ),
             }
         ]
@@ -157,6 +165,15 @@ class FullDuplexAssistant:
                 pass
 
     def ask_brain(self, user_text: str) -> str:
+        emotion_data = self.emotion_detector.detect(user_text)
+        self.last_emotion = emotion_data
+
+        emotion_instruction = self.personality_manager.get_emotion_context_instruction(emotion_data)
+        dynamic_system = self.personality_manager.get_system_prompt_with_emotion(emotion_data)
+
+        if self.history[0]["role"] == "system":
+            self.history[0]["content"] = dynamic_system
+
         self.history.append({"role": "user", "content": user_text})
 
         payload: dict[str, Any] = {
