@@ -38,7 +38,7 @@ BYTES_PER_SAMPLE = 2
 class VoiceConfig:
     wake_word: str = "hey yaarbot"
     wake_word_enabled: bool = True
-    whisper_model: str = "base"
+    whisper_model: str = "small"
     ollama_model: str = "llama3.1:8b"
     ollama_url: str = "http://127.0.0.1:11434/api/chat"
     tts_rate: int = 185
@@ -212,6 +212,8 @@ class FullDuplexAssistant:
         try:
             self.offline_tts.say(text)
             self.offline_tts.runAndWait()
+        except Exception as e:
+            print(f"[TTS Error] {e}")
         finally:
             self.speaking_event.clear()
             self.interrupt_event.clear()
