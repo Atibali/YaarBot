@@ -156,7 +156,7 @@ class FullDuplexAssistant:
             f.write(wav_data)
 
         try:
-            out = self.offline_whisper.transcribe(tmp, fp16=False, language="hi")
+            out = self.offline_whisper.transcribe(tmp, fp16=False, language="en")
             return (out.get("text") or "").strip()
         finally:
             try:
@@ -223,6 +223,10 @@ class FullDuplexAssistant:
         else:
             print("Wake word mode OFF. Listening continuously.")
 
+        greeting = "Hey! I'm YaarBot. What's on your mind?"
+        print(f"Bot: {greeting}")
+        self.speak_offline_interruptible(greeting)
+
         with sd.InputStream(
             samplerate=SAMPLE_RATE,
             channels=CHANNELS,
@@ -266,5 +270,5 @@ class FullDuplexAssistant:
 
 
 if __name__ == "__main__":
-    bot = FullDuplexAssistant(VoiceConfig())
+    bot = FullDuplexAssistant(VoiceConfig(wake_word_enabled=False))
     bot.run()
