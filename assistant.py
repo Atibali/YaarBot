@@ -210,8 +210,11 @@ class FullDuplexAssistant:
         self.interrupt_event.clear()
 
         try:
-            self.offline_tts.say(text)
-            self.offline_tts.runAndWait()
+            tts = pyttsx3.init()
+            tts.setProperty("rate", self.config.tts_rate)
+            tts.say(text)
+            tts.runAndWait()
+            del tts
         except Exception as e:
             print(f"[TTS Error] {e}")
         finally:
